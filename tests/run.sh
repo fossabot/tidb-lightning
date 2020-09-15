@@ -255,21 +255,23 @@ ca_path = "$TT/ca.pem"
 cert_path = "$TT/tiflash.pem"
 key_path = "$TT/tiflash.key"
 EOF
-    rm -rf $TEST_DIR/tiflash /tmp/tiflash
-    echo "Starting TiFlash..."
-    LD_LIBRARY_PATH=bin/ bin/tiflash server --config-file="$TEST_DIR/tiflash.toml" &
-    echo "TiFlash started..."
+    if [ -n $TIFLASH ]; then
+        rm -rf $TEST_DIR/tiflash /tmp/tiflash
+        echo "Starting TiFlash..."
+        LD_LIBRARY_PATH=bin/ bin/tiflash server --config-file="$TEST_DIR/tiflash.toml" &
+        echo "TiFlash started..."
 
-    i=0
-    while ! run_curl https://127.0.0.1:8125 1>/dev/null 2>&1; do
-        i=$((i+1))
-        if [ "$i" -gt 60 ]; then
-            echo "failed to start tiflash"
-            return 1
-        fi
-        echo "TiFlash seems doesn't started, retrying..."
-        sleep 3
-    done
+        i=0
+        while ! run_curl https://127.0.0.1:8125 1>/dev/null 2>&1; do
+            i=$((i+1))
+            if [ "$i" -gt 60 ]; then
+                echo "failed to start tiflash"
+                return 1
+            fi
+            echo "TiFlash seems doesn't started, retrying..."
+            sleep 3
+        done
+    fi
 }
 
 trap stop_services EXIT
